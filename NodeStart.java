@@ -37,18 +37,18 @@ public class NodeStart {
 		/*System.out.println("Waiting for connection ...");*/
 
 		try {
-			Thread.sleep(15000);
+			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 		
 		ConnectAll();
 
-		try {
+		/*try {
 			Thread.sleep(15000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}
+		}*/
 		
 		Thread clientThread = new Thread(new Client(connectionDetails));
 		clientThread.start();
@@ -59,7 +59,7 @@ public class NodeStart {
 
 	public static void ConnectAll() throws IOException {
 
-		for(int i=1; i<Node.sendConfiguration.size(); i++)
+		for(int i=0; i<Node.sendConfiguration.size(); i++)
 		{
 			String value = Node.sendConfiguration.get(i);
 			String[] values = value.split(" ");
@@ -72,6 +72,7 @@ public class NodeStart {
 			clientSocket.connect(serverAddr, 0, 0);
 			clientSocket.configureBlocking(false);
 			Node.connectionDetails.put(i, clientSocket);
+			System.out.println("Node"+Node.NodeId+" connects to "+Node.sendConfiguration.get(i));
 		}
 	}
 
@@ -119,6 +120,7 @@ public class NodeStart {
 			if(Integer.parseInt(n) < node.getNodeId())
 			{
 				node.sendConfiguration.put(Integer.parseInt(n), configuration.get(Integer.parseInt(n)));
+			
 			}
 			else
 			{

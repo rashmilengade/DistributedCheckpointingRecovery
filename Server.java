@@ -44,6 +44,7 @@ public class Server implements Runnable {
 						if(hostName.equals(values[0]))
 						{
 							Node.connectionDetails.put(entry.getKey(),clientSockets[i]);
+							System.out.println("Node"+Node.NodeId+" accepts connection from "+Node.sendConfiguration.get(entry.getKey()));
 							flag = true;
 							break;
 						}
