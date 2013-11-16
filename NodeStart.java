@@ -94,7 +94,7 @@ public class NodeStart {
 			int key = Integer.parseInt(token[0]);
 			String hostName = token[1];
 			String portNumber = token[2];
-			Node.timer = Integer.parseInt(token[3]);
+			
 			
 			
 			if(myHostName.equals(hostName))
@@ -103,6 +103,7 @@ public class NodeStart {
 				node.portNumber = Integer.parseInt(portNumber);
 				node.setNodeId(key);
 				neighbours = token[4].split(",");
+				Node.timer = Integer.parseInt(token[3]);
 			}
 			//neighboursList.add(neighbours);
 			configuration.put(key, hostName + " " + portNumber);
