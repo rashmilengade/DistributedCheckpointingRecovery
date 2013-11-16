@@ -1,0 +1,2 @@
+0 net31.utdallas.edu 5552 5 2
+1 net32.utdallas.edu 3332 10 1
