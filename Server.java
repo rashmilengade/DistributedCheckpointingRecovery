@@ -26,7 +26,7 @@ public class Server implements Runnable {
 		String hostname = null;
 		// Accept Connections from all other nodes
 		SctpChannel[] clientSockets = new SctpChannel[Node.receiveConfiguration.size()];
-		for(int i=1; i<Node.receiveConfiguration.size(); i++)
+		for(int i=0; i<Node.receiveConfiguration.size(); i++)
 		{
 			try {
 				clientSockets[i] = serverSocket.accept();
