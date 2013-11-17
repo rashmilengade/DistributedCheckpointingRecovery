@@ -44,7 +44,7 @@ public class Server implements Runnable {
 						if(hostName.equals(values[0]))
 						{
 							Node.connectionDetails.put(entry.getKey(),clientSockets[i]);
-							System.out.println("Node"+Node.NodeId+" accepts connection from "+Node.sendConfiguration.get(entry.getKey()));
+							System.out.println("Node"+Node.NodeId+" accepts connection from "+entry.getKey());
 							flag = true;
 							break;
 						}
@@ -61,6 +61,7 @@ public class Server implements Runnable {
 
 		//Accept messages from all the nodes and process it
 		boolean flag = true;
+		int counter =0;
 		while(flag)
 		{
 			for(Entry<Integer,SctpChannel> entry : Node.connectionDetails.entrySet())
@@ -81,8 +82,12 @@ public class Server implements Runnable {
 					try {
 						in = new ObjectInputStream(bis);
 						Message messageInfo =(Message) in.readObject(); 
-				System.out.println(messageInfo.messageText+", "+messageInfo.senderNode+", "+messageInfo.timeStamp);
-			
+						System.out.println(messageInfo.messageText+", "+messageInfo.senderNode+", "+messageInfo.timeStamp);
+						counter++;
+						if(counter == Node.connectionDetails.size())
+						{
+							flag = false;
+						}
 
 					} catch (IOException e) {
 						e.printStackTrace();

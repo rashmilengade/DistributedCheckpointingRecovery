@@ -19,24 +19,23 @@ import com.sun.nio.sctp.SctpChannel;
 public class Client implements Runnable{
 
 	public int counter=0;
-	HashMap<Integer, SctpChannel> connectionDetails;
+	ConcurrentHashMap<Integer, SctpChannel> connectionDetails;
 
-	public Client(HashMap<Integer, SctpChannel> con) {
+	public Client(ConcurrentHashMap<Integer, SctpChannel> con) {
 		this.connectionDetails = con;
 	}
 	@Override
 	public void run() {
-
-		while(true)
+		boolean flag = true;
+		while(flag)
 		{
 			String ms = "Hello ....";
 			Message msg = new Message();
 			msg.messageText = ms;
 			msg.senderNode = Node.NodeId;
-			msg.initiator = Node.NodeId;
-			msg.timeStamp = Node.clock.increment();
 			msg.type = Message.messageType.Application.toString();
 			sendAll(Node.connectionDetails,msg);
+			flag = false;
 		}	
 	}
 
@@ -56,7 +55,7 @@ public class Client implements Runnable{
 			}
 		}
 	}
-	public  void sendAll(HashMap<Integer, SctpChannel> connectionDetails, Message message) {
+	public  void sendAll(ConcurrentHashMap<Integer, SctpChannel> connectionDetails, Message message) {
 
 		for(Entry<Integer , SctpChannel> entry : connectionDetails.entrySet())
 		{

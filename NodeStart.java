@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.concurrent.ConcurrentHashMap;
 
 import com.sun.nio.sctp.SctpChannel;
 import com.sun.nio.sctp.SctpServerChannel;
@@ -15,7 +16,7 @@ public class NodeStart {
 
 	public static void main(String[] args) throws IOException {
 		Node node = new Node();
-		HashMap<Integer, SctpChannel> connectionDetails = new HashMap<Integer,SctpChannel>();
+		ConcurrentHashMap<Integer, SctpChannel> connectionDetails = new ConcurrentHashMap<Integer,SctpChannel>();
 
 		String fileName = null;
 		if (0 < args.length) {
@@ -44,11 +45,11 @@ public class NodeStart {
 		
 		ConnectAll();
 
-		/*try {
+		try {
 			Thread.sleep(15000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
-		}*/
+		}
 		
 		Thread clientThread = new Thread(new Client(connectionDetails));
 		clientThread.start();
@@ -59,9 +60,9 @@ public class NodeStart {
 
 	public static void ConnectAll() throws IOException {
 
-		for(int i=0; i<Node.sendConfiguration.size(); i++)
+		for(Entry e : Node.sendConfiguration.entrySet())
 		{
-			String value = Node.sendConfiguration.get(i);
+			String value = (String) e.getValue();
 			String[] values = value.split(" ");
 			String hostName = values[0];
 			int portNumber = Integer.parseInt(values[1]);
@@ -71,8 +72,8 @@ public class NodeStart {
 			clientSocket = SctpChannel.open();
 			clientSocket.connect(serverAddr, 0, 0);
 			clientSocket.configureBlocking(false);
-			Node.connectionDetails.put(i, clientSocket);
-			System.out.println("Node"+Node.NodeId+" connects to "+Node.sendConfiguration.get(i));
+			Node.connectionDetails.put((Integer) e.getKey(), clientSocket);
+			System.out.println("Node"+Node.NodeId+" sends connection to "+e.getKey());
 		}
 	}
 

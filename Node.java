@@ -24,7 +24,7 @@ public class Node {
 	static HashMap<Integer,String> receiveConfiguration = new HashMap<Integer, String>();
 	static HashMap<Integer,String> sendConfiguration = new HashMap<Integer, String>();
 	
-	static HashMap<Integer,SctpChannel> connectionDetails = new HashMap<Integer, SctpChannel>();
+	static ConcurrentHashMap<Integer,SctpChannel> connectionDetails = new ConcurrentHashMap<Integer, SctpChannel>();
 	static Queue<Message> msgQueue = new LinkedBlockingDeque<Message>();
 	static int timer;
 	static ArrayList<Integer> FLS = new ArrayList<Integer>();
