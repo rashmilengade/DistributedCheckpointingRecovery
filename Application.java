@@ -1,44 +1,62 @@
 import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.io.Writer;
-import java.util.HashMap;
-import java.util.Random;
+import java.util.*;
 
-public class Application implements Runnable {
-public int cnt=0,n=0,sum=0,amount=1000;
-public String[] messageText = {"Withdraw 1000","Deposit 500", "Interest 5%"}; 
-public Random r = new Random();
+import com.sun.corba.se.impl.encoding.OSFCodeSetRegistry.Entry;
+import com.sun.nio.sctp.SctpChannel;
+
+public class Application implements Runnable
+{
+	public int cnt=0,n=0,sum=0,amount=1000;
+	public String[] messageText = {"Withdraw 1000","Deposit 500", "Interest 5%"}; 
+	public Random r = new Random();
 
 	@Override
-	public void run() {
-		
-		synchronized (Node.msgQueue) {
-			
-			for(int i=0; i<n; i++)
+	public void run()
+	{
+		n = Node.connectionDetails.size();
+		//synchronized (Node.msgQueue) {
+		int i=0;
+		int n=1;
+		while(true){
+		while(n<=1000 && Node.isFreezeApplicaion() == false)
+		{
+			System.out.println("In APPLICATION");
+			for(java.util.Map.Entry<Integer, SctpChannel> entry : Node.connectionDetails.entrySet())
 			{
 				Message message = new Message();
-				message.senderNode = Node.NodeId;
-				String msg = "HELLO ";
 				message.type = Message.messageType.Application.toString();
-				message.messageText = messageText[r.nextInt(2)];
-				message.delivered = false;
-				message.messageId = i + "--" + Node.NodeId;
-				Node.msgQueue.add(message);
+				Node.setPriorityValue(message.type);
+				message.priority = Node.getPriorityValue(message.type);
+				message.destinationNode = entry.getKey();
+				message.messageId = message.destinationNode + "--" + Node.NodeId;
+				message.counter =i;
+				i++;
+				String msg = "Verification code by "+Node.NodeId+" to "+entry.getKey() + r.nextLong();
+				
+				message.messageText = msg;
+
+				Node.nQueue(message);
+				//System.out.println("Application msg added to queue" +msg);
+			}
+			n++;
+			try
+			{
+				Thread.sleep(8000);
+			}
+			catch (InterruptedException e) 
+			{
+				e.printStackTrace();
 			}
 		}
-		while(true)
-		{
-			
-		}
 	}
-	
-	private void processMessage(Message m) {
+		
+	}
+
+	/*private void processMessage(Message m) {
 		String value = m.messageText;
 		String[] values = value.split(" ");
 		if(values[0].equals("Withdraw"))
@@ -53,12 +71,12 @@ public Random r = new Random();
 		{
 			amount = (int)(amount + (amount*0.05));
 		}
-	}
+	}*/
 
 	public HashMap<String, Integer> SentMessagesMap() throws IOException {
-		
+
 		HashMap<String, Integer> sentMessages = new HashMap<String, Integer>();
-		
+
 		File fileset = new File("/home/004/r/rx/rxl122130/AOSInput");
 		File[] files = fileset.listFiles();
 		for(int i=0; i<files.length; i++)
@@ -74,7 +92,7 @@ public Random r = new Random();
 			String value;
 			while((value =br.readLine()) != null)
 			{
-				
+
 				String[] values = value.split(" ");
 				String key = values[values.length-1];
 				sentMessages.put(key, 1);
@@ -82,44 +100,44 @@ public Random r = new Random();
 		}
 		return sentMessages;
 	}
-	
-public boolean CompareInputOutput(HashMap<String, Integer> sentMessages) {
 
-	FileReader fr;
-	BufferedReader br=null;
-	try {
-		
-		fr = new FileReader("/home/004/r/rx/rxl122130/AOSOutput/Node"+Node.NodeId+".txt");
-		br = new BufferedReader(fr);
-	} catch (FileNotFoundException e) {
-		e.printStackTrace();
-	} 
-	try {
-		String value;
-		while((value=br.readLine()) != null)
-		{
-			String[] values = value.split(" ");
-			String key = values[values.length -1];
-			boolean keyResult = sentMessages.containsKey(key);
-			if(keyResult == false)
+	public boolean CompareInputOutput(HashMap<String, Integer> sentMessages) {
+
+		FileReader fr;
+		BufferedReader br=null;
+		try {
+
+			fr = new FileReader("/home/004/r/rx/rxl122130/AOSOutput/Node"+Node.NodeId+".txt");
+			br = new BufferedReader(fr);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} 
+		try {
+			String value;
+			while((value=br.readLine()) != null)
 			{
-				return false;
+				String[] values = value.split(" ");
+				String key = values[values.length -1];
+				boolean keyResult = sentMessages.containsKey(key);
+				if(keyResult == false)
+				{
+					return false;
+				}
 			}
+
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		
-	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+		try {
+			br.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return true;
 	}
-	try {
-		br.close();
-	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-	return true;
-}
-	
+
 	public static boolean CompareFile() {
 		int j=0;
 		System.out.println("in compare file");

@@ -14,20 +14,20 @@ import com.sun.nio.sctp.SctpServerChannel;
 
 public class NodeStart {
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws IOException, InterruptedException {
 		Node node = new Node();
 		ConcurrentHashMap<Integer, SctpChannel> connectionDetails = new ConcurrentHashMap<Integer,SctpChannel>();
 
 		String fileName = null;
 		if (0 < args.length) {
-		    fileName = args[0];
-		  }
+			fileName = args[0];
+		}
 		else
 		{
 			System.out.println("Invalid File Name.. !!! Please run again");
 		}
-		 MakeConfiguration(node,fileName);
-				
+		MakeConfiguration(node,fileName);
+
 		SctpServerChannel serverSocket;
 		serverSocket = SctpServerChannel.open();
 		InetSocketAddress serverAddress = new InetSocketAddress(node.portNumber);
@@ -38,24 +38,46 @@ public class NodeStart {
 		/*System.out.println("Waiting for connection ...");*/
 
 		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		ConnectAll();
+
+		try {
+			Thread.sleep(10000);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+
+		Thread clientThread = new Thread(new Client());
+		clientThread.start();
+		Node.InitilizeVector();
+
+		Thread.sleep(10000);
+
+		Thread application = new Thread(new Application());
+		application.start();
+		try {
 			Thread.sleep(5000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
-		ConnectAll();
+
+		Thread timerThread = new Thread(new Timer());
+		timerThread.start();
 
 		try {
-			Thread.sleep(15000);
+			Thread.sleep(50000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		
-		Thread clientThread = new Thread(new Client(connectionDetails));
-		clientThread.start();
-		
-		Thread application = new Thread(new Application());
-		application.start();
+		/*if(node.NodeId == 0)
+		{
+			Thread recoveryThread = new Thread(new Recover());
+			recoveryThread.start();
+		}*/
 	}
 
 	public static void ConnectAll() throws IOException {
@@ -90,29 +112,37 @@ public class NodeStart {
 		//ArrayList<String[]> neighboursList = new ArrayList<String[]>();
 		String[] neighbours = null;
 
+		int failed =-1;
 		while((line = br.readLine()) != null)
 		{
 			String[] token = line.split(" ");
 			int key = Integer.parseInt(token[0]);
 			String hostName = token[1];
 			String portNumber = token[2];
-			
-			
-			
+
+
+
 			if(myHostName.equals(hostName))
 			{
 				node.hostName = hostName;
 				node.portNumber = Integer.parseInt(portNumber);
 				node.setNodeId(key);
 				neighbours = token[4].split(",");
-				Node.timer = Integer.parseInt(token[3]);
+				Node.setTimer(Integer.parseInt(token[3]));
 			}
 			//neighboursList.add(neighbours);
 			configuration.put(key, hostName + " " + portNumber);
+			
+				failed = Integer.parseInt(token[5]);
+			
 		}
-	
+		System.out.println("Faild node :" + Node.failNode);
+		Node.nodes = configuration.size();
 		System.out.println("My Node ID " + node.getNodeId());
-
+		if(Node.NodeId == failed)
+		{
+			Node.failNode = failed;
+		}
 		br.close();
 		file.close();
 
@@ -121,14 +151,14 @@ public class NodeStart {
 			if(Integer.parseInt(n) < node.getNodeId())
 			{
 				node.sendConfiguration.put(Integer.parseInt(n), configuration.get(Integer.parseInt(n)));
-			
+
 			}
 			else
 			{
 				node.receiveConfiguration.put(Integer.parseInt(n), configuration.get(Integer.parseInt(n)));
 			}
 		}
-		
+
 		//return configuration;
 	}
 }
